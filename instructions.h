@@ -8,5 +8,8 @@ enum
     JMP_NOT_EQ,
     PSH_LIT = 0x17,
     PSH_REG,
-    POP = 0x1A
+    POP = 0x1A,
+    CAL_LIT = 0x5E,
+    CAL_REG,
+    RET
 };

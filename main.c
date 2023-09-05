@@ -26,6 +26,7 @@ struct CPU
 {
     uint8_t mem[MEM_SIZE];
     uint16_t reg[NUM_REG];
+    uint16_t frame_size;
 } cpu;
 
 void init()
@@ -59,14 +60,52 @@ void push(uint16_t val)
     cpu.mem[cpu.reg[sp]] = val >> 8;
     cpu.mem[cpu.reg[sp] + 1] = val;
     cpu.reg[sp] -= 2;
+    cpu.frame_size += 2;
 }
 
 uint16_t pop()
 {
     cpu.reg[sp] += 2;
+    cpu.frame_size -= 2;
     uint8_t hi = cpu.mem[cpu.reg[sp]];
     uint8_t lo = cpu.mem[cpu.reg[sp] + 1];
     return (hi << 8) | lo;
+}
+
+void push_state()
+{
+    push(cpu.reg[ip]);
+    push(cpu.reg[rA]);
+    push(cpu.reg[rB]);
+    push(cpu.reg[rC]);
+    push(cpu.reg[rD]);
+    push(cpu.reg[rE]);
+    push(cpu.reg[rF]);
+    push(cpu.frame_size + 2);
+    cpu.reg[fp] = cpu.reg[sp];
+    cpu.frame_size = 0;
+}
+
+void pop_state()
+{
+    const uint16_t frame_address = cpu.reg[fp];
+    cpu.reg[sp] = frame_address;
+
+    cpu.frame_size = pop();
+    cpu.reg[rF] = pop();
+    cpu.reg[rE] = pop();
+    cpu.reg[rD] = pop();
+    cpu.reg[rC] = pop();
+    cpu.reg[rB] = pop();
+    cpu.reg[rA] = pop();
+    cpu.reg[ip] = pop();
+
+    const uint16_t n_arg = pop();
+    for (uint16_t i = 0; i < n_arg; i++)
+    {
+        pop();
+    }
+    cpu.reg[fp] = frame_address + cpu.frame_size;
 }
 
 void execute(uint8_t ins)
@@ -136,6 +175,26 @@ void execute(uint8_t ins)
         cpu.reg[reg] = pop();
         return;
     }
+    case CAL_LIT:
+    {
+        const uint16_t address = fetch16();
+        push_state();
+        cpu.reg[ip] = address;
+        return;
+    }
+    case CAL_REG:
+    {
+        const uint8_t reg = fetch_reg();
+        const uint16_t address = cpu.reg[reg];
+        push_state();
+        cpu.reg[ip] = address;
+        return;
+    }
+    case RET:
+    {
+        pop_state();
+        return;
+    }
     }
 }
 
@@ -159,10 +218,10 @@ void debug()
     printf("rF: %4x\n", cpu.reg[rF]);
 }
 
-void debug_show_mem(uint16_t address)
+void debug_show_mem(uint16_t address, int n)
 {
     printf("0x%04x: ", address);
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < (n - 1); i++)
     {
         printf("%02x ", cpu.mem[address + i]);
     }
@@ -200,34 +259,96 @@ int main()
 
     //////////////
 
-    cpu.mem[i++] = MOV_LIT_REG;
-    cpu.mem[i++] = 0x51;
-    cpu.mem[i++] = 0x51;
-    cpu.mem[i++] = rA;
+    // cpu.mem[i++] = MOV_LIT_REG;
+    // cpu.mem[i++] = 0x51;
+    // cpu.mem[i++] = 0x51;
+    // cpu.mem[i++] = rA;
+
+    // cpu.mem[i++] = MOV_LIT_REG;
+    // cpu.mem[i++] = 0x42;
+    // cpu.mem[i++] = 0x42;
+    // cpu.mem[i++] = rB;
+
+    // cpu.mem[i++] = PSH_REG;
+    // cpu.mem[i++] = rA;
+
+    // cpu.mem[i++] = PSH_REG;
+    // cpu.mem[i++] = rB;
+
+    // cpu.mem[i++] = POP;
+    // cpu.mem[i++] = rA;
+
+    // cpu.mem[i++] = POP;
+    // cpu.mem[i++] = rB;
+
+    ///////////
+
+    cpu.mem[i++] = PSH_LIT;
+    cpu.mem[i++] = 0x33;
+    cpu.mem[i++] = 0x33;
+
+    cpu.mem[i++] = PSH_LIT;
+    cpu.mem[i++] = 0x22;
+    cpu.mem[i++] = 0x22;
+
+    cpu.mem[i++] = PSH_LIT;
+    cpu.mem[i++] = 0x11;
+    cpu.mem[i++] = 0x11;
 
     cpu.mem[i++] = MOV_LIT_REG;
-    cpu.mem[i++] = 0x42;
-    cpu.mem[i++] = 0x42;
-    cpu.mem[i++] = rB;
-
-    cpu.mem[i++] = PSH_REG;
+    cpu.mem[i++] = 0x12;
+    cpu.mem[i++] = 0x34;
     cpu.mem[i++] = rA;
 
-    cpu.mem[i++] = PSH_REG;
-    cpu.mem[i++] = rB;
+    cpu.mem[i++] = MOV_LIT_REG;
+    cpu.mem[i++] = 0x56;
+    cpu.mem[i++] = 0x78;
+    cpu.mem[i++] = rD;
 
-    cpu.mem[i++] = POP;
+    cpu.mem[i++] = PSH_LIT;
+    cpu.mem[i++] = 0x00;
+    cpu.mem[i++] = 0x00;
+
+    cpu.mem[i++] = CAL_LIT;
+    cpu.mem[i++] = 0x30;
+    cpu.mem[i++] = 0x00;
+
+    cpu.mem[i++] = PSH_LIT;
+    cpu.mem[i++] = 0x44;
+    cpu.mem[i++] = 0x44;
+
+    i = 0x3000;
+
+    cpu.mem[i++] = PSH_LIT;
+    cpu.mem[i++] = 0x01;
+    cpu.mem[i++] = 0x02;
+
+    cpu.mem[i++] = PSH_LIT;
+    cpu.mem[i++] = 0x03;
+    cpu.mem[i++] = 0x04;
+
+    cpu.mem[i++] = PSH_LIT;
+    cpu.mem[i++] = 0x05;
+    cpu.mem[i++] = 0x06;
+
+    cpu.mem[i++] = MOV_LIT_REG;
+    cpu.mem[i++] = 0x07;
+    cpu.mem[i++] = 0x08;
     cpu.mem[i++] = rA;
 
-    cpu.mem[i++] = POP;
-    cpu.mem[i++] = rB;
+    cpu.mem[i++] = MOV_LIT_REG;
+    cpu.mem[i++] = 0x09;
+    cpu.mem[i++] = 0x0a;
+    cpu.mem[i++] = rF;
+
+    cpu.mem[i++] = RET;
 
     init();
     while (1)
     {
         debug();
-        debug_show_mem(cpu.reg[ip]);
-        debug_show_mem(0xffff - 7);
+        debug_show_mem(cpu.reg[ip], 8);
+        debug_show_mem(0xffff - 42, 44);
         step();
         while (getchar() != '\n')
             ;
