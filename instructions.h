@@ -11,5 +11,6 @@ enum
     POP = 0x1A,
     CAL_LIT = 0x5E,
     CAL_REG,
-    RET
+    RET,
+    HLT = 0xff
 };

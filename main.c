@@ -1,5 +1,6 @@
 // https://www.youtube.com/watch?v=mamop8aqFNk&list=PLP29wDx6QmW5DdwpdwHCRJsEubS5NrQ9b&index=3
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -27,12 +28,14 @@ struct CPU
     uint8_t mem[MEM_SIZE];
     uint16_t reg[NUM_REG];
     uint16_t frame_size;
+    bool run;
 } cpu;
 
 void init()
 {
-    cpu.reg[sp] = MEM_SIZE - 2;
-    cpu.reg[fp] = MEM_SIZE - 2;
+    cpu.run = true;
+    cpu.reg[sp] = 0xffff - 1;
+    cpu.reg[fp] = 0xffff - 1;
 }
 
 uint8_t fetch()
@@ -195,6 +198,11 @@ void execute(uint8_t ins)
         pop_state();
         return;
     }
+    case HLT:
+    {
+        cpu.run = false;
+        return;
+    }
     }
 }
 
@@ -202,6 +210,12 @@ void step()
 {
     const uint8_t ins = fetch();
     execute(ins);
+}
+
+void run()
+{
+    while (cpu.run)
+        step();
 }
 
 void debug()
@@ -317,6 +331,8 @@ int main()
     cpu.mem[i++] = 0x44;
     cpu.mem[i++] = 0x44;
 
+    cpu.mem[i++] = HLT;
+
     i = 0x3000;
 
     cpu.mem[i++] = PSH_LIT;
@@ -344,7 +360,7 @@ int main()
     cpu.mem[i++] = RET;
 
     init();
-    while (1)
+    while (cpu.run)
     {
         debug();
         debug_show_mem(cpu.reg[ip], 8);
