@@ -13,7 +13,7 @@ Device *device_ref;
 
 bool check_device_map(uint16_t address)
 {
-    if (0x1000 <= address && address <= 0x1080)
+    if (0x1000 <= address && address <= 0x10ff)
     {
         device_ref = &screen;
         return true;

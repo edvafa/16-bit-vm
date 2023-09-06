@@ -121,8 +121,8 @@ void write_test_to_mem(CPU *cpu)
     /////////////
 
     cpu->mem[i++] = MOV_LIT_REG;
-    cpu->mem[i++] = 0x00;
-    cpu->mem[i++] = 'H';
+    cpu->mem[i++] = 0xff;
+    cpu->mem[i++] = '*';
     cpu->mem[i++] = rA;
 
     cpu->mem[i++] = MOV_REG_MEM;
@@ -130,45 +130,20 @@ void write_test_to_mem(CPU *cpu)
     cpu->mem[i++] = 0x10;
     cpu->mem[i++] = 0x00;
 
-    cpu->mem[i++] = MOV_LIT_REG;
-    cpu->mem[i++] = 0x00;
-    cpu->mem[i++] = 'e';
-    cpu->mem[i++] = rA;
+    for (int j = 0; j < 256; j++)
+    {
+        cpu->mem[i++] = MOV_LIT_REG;
+        cpu->mem[i++] = j % 2 == 0 ? 0x01 : 0x02;
+        cpu->mem[i++] = '*';
+        cpu->mem[i++] = rA;
 
-    cpu->mem[i++] = MOV_REG_MEM;
-    cpu->mem[i++] = rA;
-    cpu->mem[i++] = 0x10;
-    cpu->mem[i++] = 0x11;
-
-    cpu->mem[i++] = MOV_LIT_REG;
-    cpu->mem[i++] = 0x00;
-    cpu->mem[i++] = 'l';
-    cpu->mem[i++] = rA;
-
-    cpu->mem[i++] = MOV_REG_MEM;
-    cpu->mem[i++] = rA;
-    cpu->mem[i++] = 0x10;
-    cpu->mem[i++] = 0x22;
-
-    cpu->mem[i++] = MOV_LIT_REG;
-    cpu->mem[i++] = 0x00;
-    cpu->mem[i++] = 'l';
-    cpu->mem[i++] = rA;
-
-    cpu->mem[i++] = MOV_REG_MEM;
-    cpu->mem[i++] = rA;
-    cpu->mem[i++] = 0x10;
-    cpu->mem[i++] = 0x33;
-
-    cpu->mem[i++] = MOV_LIT_REG;
-    cpu->mem[i++] = 0x00;
-    cpu->mem[i++] = 'o';
-    cpu->mem[i++] = rA;
-
-    cpu->mem[i++] = MOV_REG_MEM;
-    cpu->mem[i++] = rA;
-    cpu->mem[i++] = 0x10;
-    cpu->mem[i++] = 0x44;
+        cpu->mem[i++] = MOV_REG_MEM;
+        cpu->mem[i++] = rA;
+        cpu->mem[i++] = 0x10;
+        cpu->mem[i++] = 0x00 + j;
+    }
 
     cpu->mem[i++] = HLT;
+
+    ////////////
 }
