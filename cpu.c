@@ -3,6 +3,7 @@
 
 #include "cpu.h"
 #include "instructions.h"
+#include "map.h"
 
 void init(CPU *cpu)
 {
@@ -111,15 +112,17 @@ void execute(CPU *cpu, uint8_t ins)
     {
         const uint8_t reg = fetch_reg(cpu);
         const uint16_t address = fetch16(cpu);
-        cpu->mem[address] = cpu->reg[reg] >> 8;
-        cpu->mem[address + 1] = cpu->reg[reg];
+        // cpu->mem[address] = cpu->reg[reg] >> 8;
+        // cpu->mem[address + 1] = cpu->reg[reg];
+        set_uint16(cpu, address, cpu->reg[reg]);
         return;
     }
     case MOV_MEM_REG:
     {
         const uint16_t address = fetch16(cpu);
         const uint8_t reg = fetch_reg(cpu);
-        cpu->reg[reg] = (cpu->mem[address] << 8) | cpu->mem[address + 1];
+        // cpu->reg[reg] = (cpu->mem[address] << 8) | cpu->mem[address + 1];
+        cpu->reg[reg] = get_uint16(cpu, address);
         return;
     }
     case ADD_REG_REG:

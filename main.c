@@ -32,6 +32,17 @@ void debug_show_mem(CPU *cpu, uint16_t address, int n)
     printf("\n");
 }
 
+void clear_screen()
+{
+    for (int y = 1; y < 16; y++)
+    {
+        for (int x = 1; x < 32; x++)
+        {
+            printf("\033[%d;%dH ", y, x);
+        }
+    }
+}
+
 int main()
 {
     CPU cpu;
@@ -40,11 +51,13 @@ int main()
 
     write_test_to_mem(&cpu);
 
+    clear_screen();
+
     while (cpu.run)
     {
-        debug(&cpu);
-        debug_show_mem(&cpu, cpu.reg[ip], 8);
-        debug_show_mem(&cpu, 0xffff - 42, 44);
+        // debug(&cpu);
+        // debug_show_mem(&cpu, cpu.reg[ip], 8);
+        // debug_show_mem(&cpu, 0xffff - 42, 44);
         step(&cpu);
         while (getchar() != '\n')
             ;
