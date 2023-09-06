@@ -1,3 +1,6 @@
+#ifndef _INSTR
+#define _INSTR
+
 enum
 {
     MOV_LIT_REG = 0x10,
@@ -14,3 +17,5 @@ enum
     RET,
     HLT = 0xff
 };
+
+#endif
