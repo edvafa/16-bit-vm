@@ -33,7 +33,6 @@ uint16_t fetch16(CPU *cpu)
 uint8_t fetch_reg(CPU *cpu)
 {
     return fetch(cpu) % NUM_REG;
-    ;
 }
 
 void push(CPU *cpu, uint16_t val)
