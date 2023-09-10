@@ -3,7 +3,7 @@ reg : "ip" | "ac" | "sp" | "fp" | /r[a-fA-F]/ ;
 hex : '$' /[0-9a-fA-F]+/ ;
 add : '&' /[0-9a-fA-F]+/ ;
 var : '!' /[a-zA-Z]+/ ;
-cod : [a-z]{3} ;
+cod : [a-z][a-z][a-z]? ;
 
 arg : <hex> | <var> | '[' <exp> ']' ;
 exp : <hex> | <var> | '(' <exp> ')' | <opr> ;
