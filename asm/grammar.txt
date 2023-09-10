@@ -10,5 +10,5 @@ exp : <hex> | <var> | '(' <exp> ')' | <opr> ;
 opr : <opp> (('+' | '-') <opp>)* ;
 opp : <exp> ('*' <exp>)* ;
 
-lbl : /^/ [a-zA-Z_]+ ':' /$/ ;
-ins : /^/ <cod> (<arg> (',' <arg>)*)? /$/ ;
+lbl : [a-zA-Z_]+ ':' ;
+ins : <cod> (<arg> (',' <arg>)*)? ;
