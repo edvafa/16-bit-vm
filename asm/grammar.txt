@@ -1,0 +1,14 @@
+
+reg : "ip" | "ac" | "sp" | "fp" | /r[a-fA-F]/ ;
+hex : '$' /[0-9a-fA-F]+/ ;
+add : '&' /[0-9a-fA-F]+/ ;
+var : '!' /[a-zA-Z]+/ ;
+cod : [a-z]{3} ;
+
+arg : <hex> | <var> | '[' <exp> ']' ;
+exp : <hex> | <var> | '(' <exp> ')' | <opr> ;
+opr : <opp> (('+' | '-') <opp>)* ;
+opp : <exp> ('*' <exp>)* ;
+
+lbl : /^/ [a-zA-Z_]+ ':' /$/ ;
+ins : /^/ <cod> (<arg> (',' <arg>)*)? /$/ ;
